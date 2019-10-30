@@ -16,7 +16,6 @@
 const finalhandler = require('finalhandler');
 const methods = require('methods');
 const debug = require('debug')('express:application');
-const http = require('http');
 const deprecate = require('depd')('express');
 const flatten = require('array-flatten');
 const merge = require('utils-merge');
@@ -614,9 +613,42 @@ app.render = function render(name, options, callback) {
  * @public
  */
 
-app.listen = function listen() {
-  const server = http.createServer(this);
-  return server.listen.apply(server, arguments);
+app.listen = function listen(...args) {
+  // https://github.com/nodejs/node/blob/bdc09c63e6ee9208ebab7e77ac513705263bbd9a/lib/net.js#L187
+  function normalizeArgs(args) {
+    let arr;
+
+    if (args.length === 0) {
+      arr = [{}, null];
+      return arr;
+    }
+
+    const arg0 = args[0];
+    let options = {};
+    if (typeof arg0 === 'object' && arg0 !== null) {
+      // (options[...][, cb])
+      options = arg0;
+    } else {
+      // ([port][, host][...][, cb])
+      options.port = arg0;
+      if (args.length > 1 && typeof args[1] === 'string') {
+        options.host = args[1];
+      }
+    }
+
+    const cb = args[args.length - 1];
+    if (typeof cb !== 'function')
+      arr = [options, null];
+    else
+      arr = [options, cb];
+
+    return arr;
+  }
+  const [, callback] = normalizeArgs(args);
+  if (callback !== null) {
+    setTimeout(callback, 1000);
+  }
+  return { close: () => {} }
 };
 
 /**
