@@ -1,3 +1,8 @@
-exports = module.exports = createApplication;
+/**
+ * @format
+ */
 
 function createApplication() {}
+
+module.exports = createApplication;
+exports = module.exports;
