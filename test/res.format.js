@@ -127,6 +127,7 @@ describe('res', function(){
       var app = express();
       var router = express.Router();
 
+      console.log(router.__proto__);
       router.get('/', function(req, res, next){
         res.format({
           text: function(){ res.send('hey') },

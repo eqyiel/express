@@ -1,5 +1,152 @@
-const qs = require('qs');
+/*!
+ * express
+ * Copyright(c) 2009-2013 TJ Holowaychuk
+ * Copyright(c) 2014-2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module dependencies.
+ * @api private
+ */
+
+const {Buffer} = require('safe-buffer')
+const contentDisposition = require('content-disposition');
+const contentType = require('content-type');
+const deprecate = require('depd')('express');
+const flatten = require('array-flatten');
+const {mime} = require('send');
+const etag = require('etag');
 const proxyaddr = require('proxy-addr');
+const qs = require('qs');
+const querystring = require('querystring');
+
+/**
+ * Return strong ETag for `body`.
+ *
+ * @param {String|Buffer} body
+ * @param {String} [encoding]
+ * @return {String}
+ * @api private
+ */
+
+exports.etag = createETagGenerator({ weak: false })
+
+/**
+ * Return weak ETag for `body`.
+ *
+ * @param {String|Buffer} body
+ * @param {String} [encoding]
+ * @return {String}
+ * @api private
+ */
+
+exports.wetag = createETagGenerator({ weak: true })
+
+/**
+ * Check if `path` looks absolute.
+ *
+ * @param {String} path
+ * @return {Boolean}
+ * @api private
+ */
+
+exports.isAbsolute = function(path){
+  if (path[0] === '/') return true;
+  if (path[1] === ':' && (path[2] === '\\' || path[2] === '/')) return true; // Windows device path
+  if (path.substring(0, 2) === '\\\\') return true; // Microsoft Azure absolute path
+};
+
+/**
+ * Flatten the given `arr`.
+ *
+ * @param {Array} arr
+ * @return {Array}
+ * @api private
+ */
+
+exports.flatten = deprecate.function(flatten,
+  'utils.flatten: use array-flatten npm module instead');
+
+/**
+ * Normalize the given `type`, for example "html" becomes "text/html".
+ *
+ * @param {String} type
+ * @return {Object}
+ * @api private
+ */
+
+exports.normalizeType = function(type){
+  return ~type.indexOf('/')
+    ? acceptParams(type)
+    : { value: mime.lookup(type), params: {} };
+};
+
+/**
+ * Normalize `types`, for example "html" becomes "text/html".
+ *
+ * @param {Array} types
+ * @return {Array}
+ * @api private
+ */
+
+exports.normalizeTypes = function(types){
+  const ret = [];
+
+  for (let i = 0; i < types.length; ++i) {
+    ret.push(exports.normalizeType(types[i]));
+  }
+
+  return ret;
+};
+
+/**
+ * Generate Content-Disposition header appropriate for the filename.
+ * non-ascii filenames are urlencoded and a filename* parameter is added
+ *
+ * @param {String} filename
+ * @return {String}
+ * @api private
+ */
+
+exports.contentDisposition = deprecate.function(contentDisposition,
+  'utils.contentDisposition: use content-disposition npm module instead');
+
+/**
+ * Parse accept params `str` returning an
+ * object with `.value`, `.quality` and `.params`.
+ * also includes `.originalIndex` for stable sorting
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function acceptParams(str, index) {
+  const parts = str.split(/ *; */);
+  const ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
+
+  for (let i = 1; i < parts.length; ++i) {
+    const pms = parts[i].split(/ *= */);
+    if (pms[0] === 'q') {
+      ret.quality = parseFloat(pms[1]);
+    } else {
+      ret.params[pms[0]] = pms[1];
+    }
+  }
+
+  return ret;
+}
+
+/**
+ * Compile "etag" value to function.
+ *
+ * @param  {Boolean|String|Function} val
+ * @return {Function}
+ * @api private
+ */
 
 exports.compileETag = function(val) {
   let fn;
@@ -25,7 +172,15 @@ exports.compileETag = function(val) {
   }
 
   return fn;
-};
+}
+
+/**
+ * Compile "query parser" value to function.
+ *
+ * @param  {String|Function} val
+ * @return {Function}
+ * @api private
+ */
 
 exports.compileQueryParser = function compileQueryParser(val) {
   let fn;
@@ -52,7 +207,15 @@ exports.compileQueryParser = function compileQueryParser(val) {
   }
 
   return fn;
-};
+}
+
+/**
+ * Compile "proxy trust" value to function.
+ *
+ * @param  {Boolean|String|Number|Array|Function} val
+ * @return {Function}
+ * @api private
+ */
 
 exports.compileTrust = function(val) {
   if (typeof val === 'function') return val;
@@ -73,10 +236,71 @@ exports.compileTrust = function(val) {
   }
 
   return proxyaddr.compile(val || []);
+}
+
+/**
+ * Set the charset in a given Content-Type string.
+ *
+ * @param {String} type
+ * @param {String} charset
+ * @return {String}
+ * @api private
+ */
+
+exports.setCharset = function setCharset(type, charset) {
+  if (!type || !charset) {
+    return type;
+  }
+
+  // parse type
+  const parsed = contentType.parse(type);
+
+  // set charset
+  parsed.parameters.charset = charset;
+
+  // format type
+  return contentType.format(parsed);
 };
+
+/**
+ * Create an ETag generator function, generating ETags with
+ * the given options.
+ *
+ * @param {object} options
+ * @return {function}
+ * @private
+ */
+
+function createETagGenerator (options) {
+  return function generateETag (body, encoding) {
+    const buf = !Buffer.isBuffer(body)
+      ? Buffer.from(body, encoding)
+      : body
+
+    return etag(buf, options)
+  }
+}
+
+/**
+ * Parse an extended query string with qs.
+ *
+ * @return {Object}
+ * @private
+ */
 
 function parseExtendedQueryString(str) {
   return qs.parse(str, {
     allowPrototypes: true
   });
+}
+
+/**
+ * Return new empty object.
+ *
+ * @return {Object}
+ * @api private
+ */
+
+function newObject() {
+  return {};
 }

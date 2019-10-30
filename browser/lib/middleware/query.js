@@ -1,9 +1,29 @@
-const merge = require('utils-merge');
+/*!
+ * express
+ * Copyright(c) 2009-2013 TJ Holowaychuk
+ * Copyright(c) 2013 Roman Shtylman
+ * Copyright(c) 2014-2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module dependencies.
+ */
+
+const merge = require('utils-merge')
 const parseUrl = require('parseurl');
 const qs = require('qs');
 
+/**
+ * @param {Object} options
+ * @return {Function}
+ * @api public
+ */
+
 module.exports = function query(options) {
-  let opts = merge({}, options);
+  let opts = merge({}, options)
   let queryparse = qs.parse;
 
   if (typeof options === 'function') {
