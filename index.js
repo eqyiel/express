@@ -8,4 +8,8 @@
 
 'use strict';
 
-module.exports = require('./lib/express');
+if (process.env.SHOULD_REPLACE_EXPRESS_DEPENDENCY) {
+  module.exports = require('./browser/express');
+} else {
+  module.exports = require('./lib/express');
+}
