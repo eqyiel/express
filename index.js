@@ -9,7 +9,7 @@
 'use strict';
 
 if (process.env.SHOULD_REPLACE_EXPRESS_DEPENDENCY) {
-  module.exports = require('./browser/express');
+  module.exports = require('./browser');
 } else {
   module.exports = require('./lib/express');
 }

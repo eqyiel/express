@@ -9,11 +9,7 @@ module.exports = {
   env: {
     node: true,
   },
-  extends: [
-    'airbnb-base',
-    'prettier',
-    'plugin:prettier/recommended'
-  ],
+  extends: ['airbnb-base', 'prettier', 'plugin:prettier/recommended'],
   plugins: ['prettier'],
   rules: {
     'prettier/prettier': ['warn', prettierConfig],

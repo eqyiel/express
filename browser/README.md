@@ -1,3 +1,3 @@
 ```
-fd js browser | entr -sc 'npm run lint; npm run test-browser'
+fd . browser | entr -sc 'cd browser; npm run lint; cd ..; SHOULD_REPLACE_EXPRESS_DEPENDENCY=1 npm run test'
 ```

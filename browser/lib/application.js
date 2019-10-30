@@ -11,7 +11,7 @@ app.init = function init() {
 };
 
 app.defaultConfiguration = function defaultConfiguration() {
-  var env = process.env.NODE_ENV || 'development';
+  const env = process.env.NODE_ENV || 'development';
 
   // default settings
   this.enable('x-powered-by');
@@ -63,7 +63,7 @@ app.defaultConfiguration = function defaultConfiguration() {
   }
 
   Object.defineProperty(this, 'router', {
-    get: function() {
+    get() {
       throw new Error('\'app.router\' is deprecated!\nPlease see the 3.x to 4.x migration guide for details on how to update your app.');
     }
   });
