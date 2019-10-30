@@ -19,7 +19,9 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
+    "array-flatten": "^2.1.2",
     "debug": "^4.1.1",
-    "merge-descriptors": "^1.0.1"
+    "merge-descriptors": "^1.0.1",
+    "setprototypeof": "^1.2.0"
   }
 }

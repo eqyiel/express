@@ -1,6 +1,20 @@
 const debug = require('debug')('express:browser-application');
+const {resolve} = require('path');
+const flatten = require('array-flatten');
+const setPrototypeOf = require('setprototypeof');
+const methods = require('methods');
+const {compileETag} = require('./utils');
+const {compileQueryParser} = require('./utils');
+const {compileTrust} = require('./utils');
+const View = require('./view');
+const Router = require('./router');
+const query = require('./middleware/query');
+const middleware = require('./middleware/init');
+
+const {slice} = Array.prototype;
 
 const app = exports = module.exports = {};
+const trustProxyDefaultSymbol = '@@symbol:trust_proxy_default';
 
 app.init = function init() {
   this.cache = {};
@@ -69,6 +83,17 @@ app.defaultConfiguration = function defaultConfiguration() {
   });
 };
 
+app.lazyrouter = function lazyrouter() {
+  if (!this._router) {
+    this._router = new Router({
+      caseSensitive: this.enabled('case sensitive routing'),
+      strict: this.enabled('strict routing')
+    });
+
+    this._router.use(query(this.get('query parser fn')));
+    this._router.use(middleware.init(this));
+  }
+};
 
 /**
  * Assign `setting` to `val`, or return `setting`'s value.
@@ -131,3 +156,79 @@ app.set = function set(setting, val) {
 app.enable = function enable(setting) {
   return this.set(setting, true);
 };
+
+app.use = function use(fn) {
+  let offset = 0;
+  let path = '/';
+
+  // default path to '/'
+  // disambiguate app.use([fn])
+  if (typeof fn !== 'function') {
+    let arg = fn;
+
+    while (Array.isArray(arg) && arg.length !== 0) {
+      arg = arg[0];
+    }
+
+    // first arg is the path
+    if (typeof arg !== 'function') {
+      offset = 1;
+      path = fn;
+    }
+  }
+
+  const fns = flatten(slice.call(arguments, offset));
+
+  if (fns.length === 0) {
+    throw new TypeError('app.use() requires a middleware function')
+  }
+
+  // setup router
+  this.lazyrouter();
+  const router = this._router;
+
+  fns.forEach(function (fn) {
+    // non-express app
+    if (!fn || !fn.handle || !fn.set) {
+      return router.use(path, fn);
+    }
+
+    debug('.use app under %s', path);
+    fn.mountpath = path;
+    fn.parent = this;
+
+    // restore .app property on req and res
+    router.use(path, function mounted_app(req, res, next) {
+      const orig = req.app;
+      fn.handle(req, res, function (err) {
+        setPrototypeOf(req, orig.request);
+        setPrototypeOf(res, orig.response);
+        next(err);
+      });
+    });
+
+    // mounted an app
+    fn.emit('mount', this);
+  }, this);
+
+  return this;
+};
+
+app.enabled = function enabled(setting) {
+  return Boolean(this.set(setting));
+};
+
+methods.forEach(function(method){
+  app[method] = function(path){
+    if (method === 'get' && arguments.length === 1) {
+      // app.get(setting)
+      return this.set(path);
+    }
+
+    this.lazyrouter();
+
+    const route = this._router.route(path);
+    route[method].apply(route, slice.call(arguments, 1));
+    return this;
+  };
+});
