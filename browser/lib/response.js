@@ -5,42 +5,41 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @private
  */
 
-const {Buffer} = require('safe-buffer')
-const contentDisposition = require('content-disposition');
-const deprecate = require('depd')('express');
-const encodeUrl = require('encodeurl');
-const escapeHtml = require('escape-html');
-const http = require('http');
-const onFinished = require('on-finished');
-const path = require('path');
-const statuses = require('statuses')
-const merge = require('utils-merge');
-const {sign} = require('cookie-signature');
-const cookie = require('cookie');
-const send = require('send');
-const {normalizeType} = require('./utils');
-const {normalizeTypes} = require('./utils');
-const {setCharset} = require('./utils');
-
-const {extname} = path;
-const {mime} = send;
-const {resolve} = path;
-const vary = require('vary');
-const {isAbsolute} = require('./utils');
+var Buffer = require('safe-buffer').Buffer
+var contentDisposition = require('content-disposition');
+var deprecate = require('depd')('express');
+var encodeUrl = require('encodeurl');
+var escapeHtml = require('escape-html');
+var http = require('http');
+var isAbsolute = require('./utils').isAbsolute;
+var onFinished = require('on-finished');
+var path = require('path');
+var statuses = require('statuses')
+var merge = require('utils-merge');
+var sign = require('cookie-signature').sign;
+var normalizeType = require('./utils').normalizeType;
+var normalizeTypes = require('./utils').normalizeTypes;
+var setCharset = require('./utils').setCharset;
+var cookie = require('cookie');
+var send = require('send');
+var extname = path.extname;
+var mime = send.mime;
+var resolve = path.resolve;
+var vary = require('vary');
 
 /**
  * Response prototype.
  * @public
  */
 
-const res = Object.create(http.ServerResponse.prototype)
+var res = Object.create(http.ServerResponse.prototype)
 
 /**
  * Module exports.
@@ -54,7 +53,7 @@ module.exports = res
  * @private
  */
 
-const charsetRegExp = /;\s*charset\s*=/;
+var charsetRegExp = /;\s*charset\s*=/;
 
 /**
  * Set status `code`.
@@ -85,10 +84,10 @@ res.status = function status(code) {
  */
 
 res.links = function(links){
-  let link = this.get('Link') || '';
+  var link = this.get('Link') || '';
   if (link) link += ', ';
   return this.set('Link', link + Object.keys(links).map(function(rel){
-    return `<${  links[rel]  }>; rel="${  rel  }"`;
+    return '<' + links[rel] + '>; rel="' + rel + '"';
   }).join(', '));
 };
 
@@ -106,13 +105,13 @@ res.links = function(links){
  */
 
 res.send = function send(body) {
-  let chunk = body;
-  let encoding;
-  const {req} = this;
-  let type;
+  var chunk = body;
+  var encoding;
+  var req = this.req;
+  var type;
 
   // settings
-  const {app} = this;
+  var app = this.app;
 
   // allow status / body
   if (arguments.length === 2) {
@@ -173,11 +172,11 @@ res.send = function send(body) {
   }
 
   // determine if ETag should be generated
-  const etagFn = app.get('etag fn')
-  const generateETag = !this.get('ETag') && typeof etagFn === 'function'
+  var etagFn = app.get('etag fn')
+  var generateETag = !this.get('ETag') && typeof etagFn === 'function'
 
   // populate Content-Length
-  let len
+  var len
   if (chunk !== undefined) {
     if (Buffer.isBuffer(chunk)) {
       // get length of Buffer
@@ -196,7 +195,7 @@ res.send = function send(body) {
   }
 
   // populate ETag
-  let etag;
+  var etag;
   if (generateETag && len !== undefined) {
     if ((etag = etagFn(chunk, encoding))) {
       this.set('ETag', etag);
@@ -207,7 +206,7 @@ res.send = function send(body) {
   if (req.fresh) this.statusCode = 304;
 
   // strip irrelevant headers
-  if (this.statusCode === 204 || this.statusCode === 304) {
+  if (204 === this.statusCode || 304 === this.statusCode) {
     this.removeHeader('Content-Type');
     this.removeHeader('Content-Length');
     this.removeHeader('Transfer-Encoding');
@@ -238,7 +237,7 @@ res.send = function send(body) {
  */
 
 res.json = function json(obj) {
-  let val = obj;
+  var val = obj;
 
   // allow status / body
   if (arguments.length === 2) {
@@ -254,11 +253,11 @@ res.json = function json(obj) {
   }
 
   // settings
-  const {app} = this;
-  const escape = app.get('json escape')
-  const replacer = app.get('json replacer');
-  const spaces = app.get('json spaces');
-  const body = stringify(val, replacer, spaces, escape)
+  var app = this.app;
+  var escape = app.get('json escape')
+  var replacer = app.get('json replacer');
+  var spaces = app.get('json spaces');
+  var body = stringify(val, replacer, spaces, escape)
 
   // content-type
   if (!this.get('Content-Type')) {
@@ -281,7 +280,7 @@ res.json = function json(obj) {
  */
 
 res.jsonp = function jsonp(obj) {
-  let val = obj;
+  var val = obj;
 
   // allow status / body
   if (arguments.length === 2) {
@@ -297,12 +296,12 @@ res.jsonp = function jsonp(obj) {
   }
 
   // settings
-  const {app} = this;
-  const escape = app.get('json escape')
-  const replacer = app.get('json replacer');
-  const spaces = app.get('json spaces');
-  let body = stringify(val, replacer, spaces, escape)
-  let callback = this.req.query[app.get('jsonp callback name')];
+  var app = this.app;
+  var escape = app.get('json escape')
+  var replacer = app.get('json replacer');
+  var spaces = app.get('json spaces');
+  var body = stringify(val, replacer, spaces, escape)
+  var callback = this.req.query[app.get('jsonp callback name')];
 
   // content-type
   if (!this.get('Content-Type')) {
@@ -330,7 +329,7 @@ res.jsonp = function jsonp(obj) {
 
     // the /**/ is a specific security mitigation for "Rosetta Flash JSONP abuse"
     // the typeof check is just to reduce client error noise
-    body = `/**/ typeof ${  callback  } === 'function' && ${  callback  }(${  body  });`;
+    body = '/**/ typeof ' + callback + ' === \'function\' && ' + callback + '(' + body + ');';
   }
 
   return this.send(body);
@@ -352,7 +351,7 @@ res.jsonp = function jsonp(obj) {
  */
 
 res.sendStatus = function sendStatus(statusCode) {
-  const body = statuses[statusCode] || String(statusCode)
+  var body = statuses[statusCode] || String(statusCode)
 
   this.statusCode = statusCode;
   this.type('txt');
@@ -402,11 +401,11 @@ res.sendStatus = function sendStatus(statusCode) {
  */
 
 res.sendFile = function sendFile(path, options, callback) {
-  let done = callback;
-  const {req} = this;
-  const res = this;
-  const {next} = req;
-  let opts = options || {};
+  var done = callback;
+  var req = this.req;
+  var res = this;
+  var next = req.next;
+  var opts = options || {};
 
   if (!path) {
     throw new TypeError('path argument is required to res.sendFile');
@@ -427,8 +426,8 @@ res.sendFile = function sendFile(path, options, callback) {
   }
 
   // create file stream
-  const pathname = encodeURI(path);
-  const file = send(req, pathname, opts);
+  var pathname = encodeURI(path);
+  var file = send(req, pathname, opts);
 
   // transfer
   sendfile(res, file, opts, function (err) {
@@ -484,11 +483,11 @@ res.sendFile = function sendFile(path, options, callback) {
  */
 
 res.sendfile = function (path, options, callback) {
-  let done = callback;
-  const {req} = this;
-  const res = this;
-  const {next} = req;
-  let opts = options || {};
+  var done = callback;
+  var req = this.req;
+  var res = this;
+  var next = req.next;
+  var opts = options || {};
 
   // support function as second arg
   if (typeof options === 'function') {
@@ -497,7 +496,7 @@ res.sendfile = function (path, options, callback) {
   }
 
   // create file stream
-  const file = send(req, path, opts);
+  var file = send(req, path, opts);
 
   // transfer
   sendfile(res, file, opts, function (err) {
@@ -533,9 +532,9 @@ res.sendfile = deprecate.function(res.sendfile,
  */
 
 res.download = function download (path, filename, options, callback) {
-  let done = callback;
-  let name = filename;
-  let opts = options || null
+  var done = callback;
+  var name = filename;
+  var opts = options || null
 
   // support function as second or third arg
   if (typeof filename === 'function') {
@@ -548,15 +547,15 @@ res.download = function download (path, filename, options, callback) {
   }
 
   // set Content-Disposition when file is sent
-  const headers = {
+  var headers = {
     'Content-Disposition': contentDisposition(name || path)
   };
 
   // merge user-provided headers
   if (opts && opts.headers) {
-    const keys = Object.keys(opts.headers)
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i]
+    var keys = Object.keys(opts.headers)
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i]
       if (key.toLowerCase() !== 'content-disposition') {
         headers[key] = opts.headers[key]
       }
@@ -568,7 +567,7 @@ res.download = function download (path, filename, options, callback) {
   opts.headers = headers
 
   // Resolve the full path for sendFile
-  const fullPath = resolve(path);
+  var fullPath = resolve(path);
 
   // send file
   return this.sendFile(fullPath, opts, done)
@@ -593,7 +592,7 @@ res.download = function download (path, filename, options, callback) {
 
 res.contentType =
 res.type = function contentType(type) {
-  const ct = type.indexOf('/') === -1
+  var ct = type.indexOf('/') === -1
     ? mime.lookup(type)
     : type;
 
@@ -658,14 +657,14 @@ res.type = function contentType(type) {
  */
 
 res.format = function(obj){
-  const {req} = this;
-  const {next} = req;
+  var req = this.req;
+  var next = req.next;
 
-  const fn = obj.default;
+  var fn = obj.default;
   if (fn) delete obj.default;
-  const keys = Object.keys(obj);
+  var keys = Object.keys(obj);
 
-  const key = keys.length > 0
+  var key = keys.length > 0
     ? req.accepts(keys)
     : false;
 
@@ -677,7 +676,7 @@ res.format = function(obj){
   } else if (fn) {
     fn();
   } else {
-    const err = new Error('Not Acceptable');
+    var err = new Error('Not Acceptable');
     err.status = err.statusCode = 406;
     err.types = normalizeTypes(keys).map(function(o){ return o.value });
     next(err);
@@ -720,8 +719,8 @@ res.attachment = function attachment(filename) {
  */
 
 res.append = function append(field, val) {
-  const prev = this.get(field);
-  let value = val;
+  var prev = this.get(field);
+  var value = val;
 
   if (prev) {
     // concat the new and prev vals
@@ -754,7 +753,7 @@ res.append = function append(field, val) {
 res.set =
 res.header = function header(field, val) {
   if (arguments.length === 2) {
-    let value = Array.isArray(val)
+    var value = Array.isArray(val)
       ? val.map(String)
       : String(val);
 
@@ -764,14 +763,14 @@ res.header = function header(field, val) {
         throw new TypeError('Content-Type cannot be set to an Array');
       }
       if (!charsetRegExp.test(value)) {
-        const charset = mime.charsets.lookup(value.split(';')[0]);
-        if (charset) value += `; charset=${  charset.toLowerCase()}`;
+        var charset = mime.charsets.lookup(value.split(';')[0]);
+        if (charset) value += '; charset=' + charset.toLowerCase();
       }
     }
 
     this.setHeader(field, value);
   } else {
-    for (const key in field) {
+    for (var key in field) {
       this.set(key, field[key]);
     }
   }
@@ -800,7 +799,7 @@ res.get = function(field){
  */
 
 res.clearCookie = function clearCookie(name, options) {
-  const opts = merge({ expires: new Date(1), path: '/' }, options);
+  var opts = merge({ expires: new Date(1), path: '/' }, options);
 
   return this.cookie(name, '', opts);
 };
@@ -830,20 +829,20 @@ res.clearCookie = function clearCookie(name, options) {
  */
 
 res.cookie = function (name, value, options) {
-  const opts = merge({}, options);
-  const {secret} = this.req;
-  const {signed} = opts;
+  var opts = merge({}, options);
+  var secret = this.req.secret;
+  var signed = opts.signed;
 
   if (signed && !secret) {
     throw new Error('cookieParser("secret") required for signed cookies');
   }
 
-  let val = typeof value === 'object'
-    ? `j:${  JSON.stringify(value)}`
+  var val = typeof value === 'object'
+    ? 'j:' + JSON.stringify(value)
     : String(value);
 
   if (signed) {
-    val = `s:${  sign(val, secret)}`;
+    val = 's:' + sign(val, secret);
   }
 
   if ('maxAge' in opts) {
@@ -878,7 +877,7 @@ res.cookie = function (name, value, options) {
  */
 
 res.location = function location(url) {
-  let loc = url;
+  var loc = url;
 
   // "back" is an alias for the referrer
   if (url === 'back') {
@@ -908,9 +907,9 @@ res.location = function location(url) {
  */
 
 res.redirect = function redirect(url) {
-  let address = url;
-  let body;
-  let status = 302;
+  var address = url;
+  var body;
+  var status = 302;
 
   // allow status / url
   if (arguments.length === 2) {
@@ -928,16 +927,16 @@ res.redirect = function redirect(url) {
 
   // Support text/{plain,html} by default
   this.format({
-    text(){
-      body = `${statuses[status]  }. Redirecting to ${  address}`
+    text: function(){
+      body = statuses[status] + '. Redirecting to ' + address
     },
 
-    html(){
-      const u = escapeHtml(address);
-      body = `<p>${  statuses[status]  }. Redirecting to <a href="${  u  }">${  u  }</a></p>`
+    html: function(){
+      var u = escapeHtml(address);
+      body = '<p>' + statuses[status] + '. Redirecting to <a href="' + u + '">' + u + '</a></p>'
     },
 
-    default(){
+    default: function(){
       body = '';
     }
   });
@@ -988,11 +987,11 @@ res.vary = function(field){
  */
 
 res.render = function render(view, options, callback) {
-  const {app} = this.req;
-  let done = callback;
-  let opts = options || {};
-  const {req} = this;
-  const self = this;
+  var app = this.req.app;
+  var done = callback;
+  var opts = options || {};
+  var req = this.req;
+  var self = this;
 
   // support callback function as second arg
   if (typeof options === 'function') {
@@ -1015,15 +1014,15 @@ res.render = function render(view, options, callback) {
 
 // pipe the send file stream
 function sendfile(res, file, options, callback) {
-  let done = false;
-  let streaming;
+  var done = false;
+  var streaming;
 
   // request aborted
   function onaborted() {
     if (done) return;
     done = true;
 
-    const err = new Error('Request aborted');
+    var err = new Error('Request aborted');
     err.code = 'ECONNABORTED';
     callback(err);
   }
@@ -1033,7 +1032,7 @@ function sendfile(res, file, options, callback) {
     if (done) return;
     done = true;
 
-    const err = new Error('EISDIR, read');
+    var err = new Error('EISDIR, read');
     err.code = 'EISDIR';
     callback(err);
   }
@@ -1090,11 +1089,11 @@ function sendfile(res, file, options, callback) {
   if (options.headers) {
     // set headers on successful transfer
     file.on('headers', function headers(res) {
-      const obj = options.headers;
-      const keys = Object.keys(obj);
+      var obj = options.headers;
+      var keys = Object.keys(obj);
 
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i];
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
         res.setHeader(k, obj[k]);
       }
     });
@@ -1119,7 +1118,7 @@ function sendfile(res, file, options, callback) {
 function stringify (value, replacer, spaces, escape) {
   // v8 checks arguments.length for optimizing simple call
   // https://bugs.chromium.org/p/v8/issues/detail?id=4730
-  let json = replacer || spaces
+  var json = replacer || spaces
     ? JSON.stringify(value, replacer, spaces)
     : JSON.stringify(value);
 

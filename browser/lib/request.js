@@ -6,29 +6,29 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @private
  */
 
-const accepts = require('accepts');
-const deprecate = require('depd')('express');
-const {isIP} = require('net');
-const typeis = require('type-is');
-const http = require('http');
-const fresh = require('fresh');
-const parseRange = require('range-parser');
-const parse = require('parseurl');
-const proxyaddr = require('proxy-addr');
+var accepts = require('accepts');
+var deprecate = require('depd')('express');
+var isIP = require('net').isIP;
+var typeis = require('type-is');
+var http = require('http');
+var fresh = require('fresh');
+var parseRange = require('range-parser');
+var parse = require('parseurl');
+var proxyaddr = require('proxy-addr');
 
 /**
  * Request prototype.
  * @public
  */
 
-const req = Object.create(http.IncomingMessage.prototype)
+var req = Object.create(http.IncomingMessage.prototype)
 
 /**
  * Module exports.
@@ -71,7 +71,7 @@ req.header = function header(name) {
     throw new TypeError('name must be a string to req.get');
   }
 
-  const lc = name.toLowerCase();
+  var lc = name.toLowerCase();
 
   switch (lc) {
     case 'referer':
@@ -130,7 +130,7 @@ req.header = function header(name) {
  */
 
 req.accepts = function(){
-  const accept = accepts(this);
+  var accept = accepts(this);
   return accept.types.apply(accept, arguments);
 };
 
@@ -143,7 +143,7 @@ req.accepts = function(){
  */
 
 req.acceptsEncodings = function(){
-  const accept = accepts(this);
+  var accept = accepts(this);
   return accept.encodings.apply(accept, arguments);
 };
 
@@ -160,7 +160,7 @@ req.acceptsEncoding = deprecate.function(req.acceptsEncodings,
  */
 
 req.acceptsCharsets = function(){
-  const accept = accepts(this);
+  var accept = accepts(this);
   return accept.charsets.apply(accept, arguments);
 };
 
@@ -177,7 +177,7 @@ req.acceptsCharset = deprecate.function(req.acceptsCharsets,
  */
 
 req.acceptsLanguages = function(){
-  const accept = accepts(this);
+  var accept = accepts(this);
   return accept.languages.apply(accept, arguments);
 };
 
@@ -210,7 +210,7 @@ req.acceptsLanguage = deprecate.function(req.acceptsLanguages,
  */
 
 req.range = function range(size, options) {
-  const range = this.get('Range');
+  var range = this.get('Range');
   if (!range) return;
   return parseRange(size, range, options);
 };
@@ -233,18 +233,18 @@ req.range = function range(size, options) {
  */
 
 req.param = function param(name, defaultValue) {
-  const params = this.params || {};
-  const body = this.body || {};
-  const query = this.query || {};
+  var params = this.params || {};
+  var body = this.body || {};
+  var query = this.query || {};
 
-  const args = arguments.length === 1
+  var args = arguments.length === 1
     ? 'name'
     : 'name, default';
-  deprecate(`req.param(${  args  }): Use req.params, req.body, or req.query instead`);
+  deprecate('req.param(' + args + '): Use req.params, req.body, or req.query instead');
 
-  if (params[name] != null && params.hasOwnProperty(name)) return params[name];
-  if (body[name] != null) return body[name];
-  if (query[name] != null) return query[name];
+  if (null != params[name] && params.hasOwnProperty(name)) return params[name];
+  if (null != body[name]) return body[name];
+  if (null != query[name]) return query[name];
 
   return defaultValue;
 };
@@ -276,12 +276,12 @@ req.param = function param(name, defaultValue) {
  */
 
 req.is = function is(types) {
-  let arr = types;
+  var arr = types;
 
   // support flattened arguments
   if (!Array.isArray(types)) {
     arr = new Array(arguments.length);
-    for (let i = 0; i < arr.length; i++) {
+    for (var i = 0; i < arr.length; i++) {
       arr[i] = arguments[i];
     }
   }
@@ -304,10 +304,10 @@ req.is = function is(types) {
  */
 
 defineGetter(req, 'protocol', function protocol(){
-  const proto = this.connection.encrypted
+  var proto = this.connection.encrypted
     ? 'https'
     : 'http';
-  const trust = this.app.get('trust proxy fn');
+  var trust = this.app.get('trust proxy fn');
 
   if (!trust(this.connection.remoteAddress, 0)) {
     return proto;
@@ -315,8 +315,8 @@ defineGetter(req, 'protocol', function protocol(){
 
   // Note: X-Forwarded-Proto is normally only ever a
   //       single value, but this is to be safe.
-  const header = this.get('X-Forwarded-Proto') || proto
-  const index = header.indexOf(',')
+  var header = this.get('X-Forwarded-Proto') || proto
+  var index = header.indexOf(',')
 
   return index !== -1
     ? header.substring(0, index).trim()
@@ -347,7 +347,7 @@ defineGetter(req, 'secure', function secure(){
  */
 
 defineGetter(req, 'ip', function ip(){
-  const trust = this.app.get('trust proxy fn');
+  var trust = this.app.get('trust proxy fn');
   return proxyaddr(this, trust);
 });
 
@@ -364,8 +364,8 @@ defineGetter(req, 'ip', function ip(){
  */
 
 defineGetter(req, 'ips', function ips() {
-  const trust = this.app.get('trust proxy fn');
-  const addrs = proxyaddr.all(this, trust);
+  var trust = this.app.get('trust proxy fn');
+  var addrs = proxyaddr.all(this, trust);
 
   // reverse the order (to farthest -> closest)
   // and remove socket address
@@ -390,12 +390,12 @@ defineGetter(req, 'ips', function ips() {
  */
 
 defineGetter(req, 'subdomains', function subdomains() {
-  const {hostname} = this;
+  var hostname = this.hostname;
 
   if (!hostname) return [];
 
-  const offset = this.app.get('subdomain offset');
-  const subdomains = !isIP(hostname)
+  var offset = this.app.get('subdomain offset');
+  var subdomains = !isIP(hostname)
     ? hostname.split('.').reverse()
     : [hostname];
 
@@ -425,8 +425,8 @@ defineGetter(req, 'path', function path() {
  */
 
 defineGetter(req, 'hostname', function hostname(){
-  const trust = this.app.get('trust proxy fn');
-  let host = this.get('X-Forwarded-Host');
+  var trust = this.app.get('trust proxy fn');
+  var host = this.get('X-Forwarded-Host');
 
   if (!host || !trust(this.connection.remoteAddress, 0)) {
     host = this.get('Host');
@@ -439,10 +439,10 @@ defineGetter(req, 'hostname', function hostname(){
   if (!host) return;
 
   // IPv6 literal support
-  const offset = host[0] === '['
+  var offset = host[0] === '['
     ? host.indexOf(']') + 1
     : 0;
-  const index = host.indexOf(':', offset);
+  var index = host.indexOf(':', offset);
 
   return index !== -1
     ? host.substring(0, index)
@@ -465,15 +465,15 @@ defineGetter(req, 'host', deprecate.function(function host(){
  */
 
 defineGetter(req, 'fresh', function(){
-  const {method} = this;
-  const {res} = this
-  const status = res.statusCode
+  var method = this.method;
+  var res = this.res
+  var status = res.statusCode
 
   // GET or HEAD for weak freshness validation only
-  if (method !== 'GET' && method !== 'HEAD') return false;
+  if ('GET' !== method && 'HEAD' !== method) return false;
 
   // 2xx or 304 as per rfc2616 14.26
-  if ((status >= 200 && status < 300) || status === 304) {
+  if ((status >= 200 && status < 300) || 304 === status) {
     return fresh(this.headers, {
       'etag': res.get('ETag'),
       'last-modified': res.get('Last-Modified')
@@ -504,7 +504,7 @@ defineGetter(req, 'stale', function stale(){
  */
 
 defineGetter(req, 'xhr', function xhr(){
-  const val = this.get('X-Requested-With') || '';
+  var val = this.get('X-Requested-With') || '';
   return val.toLowerCase() === 'xmlhttprequest';
 });
 

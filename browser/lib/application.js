@@ -6,43 +6,42 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @private
  */
 
-const finalhandler = require('finalhandler');
-const methods = require('methods');
-const debug = require('debug')('express:application');
-const deprecate = require('depd')('express');
-const flatten = require('array-flatten');
-const merge = require('utils-merge');
-const {resolve} = require('path');
-const setPrototypeOf = require('setprototypeof')
-const {compileTrust} = require('./utils');
-const {compileQueryParser} = require('./utils');
-const {compileETag} = require('./utils');
-const View = require('./view');
-const query = require('./middleware/query');
-const middleware = require('./middleware/init');
-const Router = require('./router');
-
-const {slice} = Array.prototype;
+var finalhandler = require('finalhandler');
+var Router = require('./router');
+var methods = require('methods');
+var middleware = require('./middleware/init');
+var query = require('./middleware/query');
+var debug = require('debug')('express:application');
+var View = require('./view');
+var compileETag = require('./utils').compileETag;
+var compileQueryParser = require('./utils').compileQueryParser;
+var compileTrust = require('./utils').compileTrust;
+var deprecate = require('depd')('express');
+var flatten = require('array-flatten');
+var merge = require('utils-merge');
+var resolve = require('path').resolve;
+var setPrototypeOf = require('setprototypeof')
+var slice = Array.prototype.slice;
 
 /**
  * Application prototype.
  */
 
-const app = exports = module.exports = {};
+var app = exports = module.exports = {};
 
 /**
  * Variable for trust proxy inheritance back-compat
  * @private
  */
 
-const trustProxyDefaultSymbol = '@@symbol:trust_proxy_default';
+var trustProxyDefaultSymbol = '@@symbol:trust_proxy_default';
 
 /**
  * Initialize the server.
@@ -68,7 +67,7 @@ app.init = function init() {
  */
 
 app.defaultConfiguration = function defaultConfiguration() {
-  const env = process.env.NODE_ENV || 'development';
+  var env = process.env.NODE_ENV || 'development';
 
   // default settings
   this.enable('x-powered-by');
@@ -120,7 +119,7 @@ app.defaultConfiguration = function defaultConfiguration() {
   }
 
   Object.defineProperty(this, 'router', {
-    get() {
+    get: function() {
       throw new Error('\'app.router\' is deprecated!\nPlease see the 3.x to 4.x migration guide for details on how to update your app.');
     }
   });
@@ -156,10 +155,10 @@ app.lazyrouter = function lazyrouter() {
  */
 
 app.handle = function handle(req, res, callback) {
-  const router = this._router;
+  var router = this._router;
 
   // final handler
-  const done = callback || finalhandler(req, res, {
+  var done = callback || finalhandler(req, res, {
     env: this.get('env'),
     onerror: logerror.bind(this)
   });
@@ -185,13 +184,13 @@ app.handle = function handle(req, res, callback) {
  */
 
 app.use = function use(fn) {
-  let offset = 0;
-  let path = '/';
+  var offset = 0;
+  var path = '/';
 
   // default path to '/'
   // disambiguate app.use([fn])
   if (typeof fn !== 'function') {
-    let arg = fn;
+    var arg = fn;
 
     while (Array.isArray(arg) && arg.length !== 0) {
       arg = arg[0];
@@ -204,7 +203,7 @@ app.use = function use(fn) {
     }
   }
 
-  const fns = flatten(slice.call(arguments, offset));
+  var fns = flatten(slice.call(arguments, offset));
 
   if (fns.length === 0) {
     throw new TypeError('app.use() requires a middleware function')
@@ -212,7 +211,7 @@ app.use = function use(fn) {
 
   // setup router
   this.lazyrouter();
-  const router = this._router;
+  var router = this._router;
 
   fns.forEach(function (fn) {
     // non-express app
@@ -226,7 +225,7 @@ app.use = function use(fn) {
 
     // restore .app property on req and res
     router.use(path, function mounted_app(req, res, next) {
-      const orig = req.app;
+      var orig = req.app;
       fn.handle(req, res, function (err) {
         setPrototypeOf(req, orig.request)
         setPrototypeOf(res, orig.response)
@@ -296,8 +295,8 @@ app.engine = function engine(ext, fn) {
   }
 
   // get file extension
-  const extension = ext[0] !== '.'
-    ? `.${  ext}`
+  var extension = ext[0] !== '.'
+    ? '.' + ext
     : ext;
 
   // store engine
@@ -322,7 +321,7 @@ app.param = function param(name, fn) {
   this.lazyrouter();
 
   if (Array.isArray(name)) {
-    for (let i = 0; i < name.length; i++) {
+    for (var i = 0; i < name.length; i++) {
       this.param(name[i], fn);
     }
 
@@ -478,7 +477,7 @@ methods.forEach(function(method){
 
     this.lazyrouter();
 
-    const route = this._router.route(path);
+    var route = this._router.route(path);
     route[method].apply(route, slice.call(arguments, 1));
     return this;
   };
@@ -497,10 +496,10 @@ methods.forEach(function(method){
 app.all = function all(path) {
   this.lazyrouter();
 
-  const route = this._router.route(path);
-  const args = slice.call(arguments, 1);
+  var route = this._router.route(path);
+  var args = slice.call(arguments, 1);
 
-  for (let i = 0; i < methods.length; i++) {
+  for (var i = 0; i < methods.length; i++) {
     route[methods[i]].apply(route, args);
   }
 
@@ -529,12 +528,12 @@ app.del = deprecate.function(app.delete, 'app.del: Use app.delete instead');
  */
 
 app.render = function render(name, options, callback) {
-  const {cache} = this;
-  let done = callback;
-  const {engines} = this;
-  let opts = options;
-  const renderOptions = {};
-  let view;
+  var cache = this.cache;
+  var done = callback;
+  var engines = this.engines;
+  var opts = options;
+  var renderOptions = {};
+  var view;
 
   // support callback function as second arg
   if (typeof options === 'function') {
@@ -565,19 +564,19 @@ app.render = function render(name, options, callback) {
 
   // view
   if (!view) {
-    const View = this.get('view');
+    var View = this.get('view');
 
     view = new View(name, {
       defaultEngine: this.get('view engine'),
       root: this.get('views'),
-      engines
+      engines: engines
     });
 
     if (!view.path) {
-      const dirs = Array.isArray(view.root) && view.root.length > 1
-        ? `directories "${  view.root.slice(0, -1).join('", "')  }" or "${  view.root[view.root.length - 1]  }"`
-        : `directory "${  view.root  }"`
-      const err = new Error(`Failed to lookup view "${  name  }" in views ${  dirs}`);
+      var dirs = Array.isArray(view.root) && view.root.length > 1
+        ? 'directories "' + view.root.slice(0, -1).join('", "') + '" or "' + view.root[view.root.length - 1] + '"'
+        : 'directory "' + view.root + '"'
+      var err = new Error('Failed to lookup view "' + name + '" in views ' + dirs);
       err.view = view;
       return done(err);
     }
@@ -644,10 +643,13 @@ app.listen = function listen(...args) {
 
     return arr;
   }
+
   const [, callback] = normalizeArgs(args);
+
   if (callback !== null) {
     setTimeout(callback, 1000);
   }
+
   return { close: () => {} }
 };
 

@@ -6,22 +6,22 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @private
  */
 
-const pathRegexp = require('path-to-regexp');
-const debug = require('debug')('express:router:layer');
+var pathRegexp = require('path-to-regexp');
+var debug = require('debug')('express:router:layer');
 
 /**
  * Module variables.
  * @private
  */
 
-const {hasOwnProperty} = Object.prototype;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 /**
  * Module exports.
@@ -36,7 +36,7 @@ function Layer(path, options, fn) {
   }
 
   debug('new %o', path)
-  const opts = options || {};
+  var opts = options || {};
 
   this.handle = fn;
   this.name = fn.name || '<anonymous>';
@@ -60,7 +60,7 @@ function Layer(path, options, fn) {
  */
 
 Layer.prototype.handle_error = function handle_error(error, req, res, next) {
-  const fn = this.handle;
+  var fn = this.handle;
 
   if (fn.length !== 4) {
     // not a standard error handler
@@ -84,7 +84,7 @@ Layer.prototype.handle_error = function handle_error(error, req, res, next) {
  */
 
 Layer.prototype.handle_request = function handle(req, res, next) {
-  const fn = this.handle;
+  var fn = this.handle;
 
   if (fn.length > 3) {
     // not a standard request handler
@@ -108,7 +108,7 @@ Layer.prototype.handle_request = function handle(req, res, next) {
  */
 
 Layer.prototype.match = function match(path) {
-  let match
+  var match
 
   if (path != null) {
     // fast path non-ending match for / (any path matches)
@@ -139,13 +139,13 @@ Layer.prototype.match = function match(path) {
   this.params = {};
   this.path = match[0]
 
-  const {keys} = this;
-  const {params} = this;
+  var keys = this.keys;
+  var params = this.params;
 
-  for (let i = 1; i < match.length; i++) {
-    const key = keys[i - 1];
-    const prop = key.name;
-    const val = decode_param(match[i])
+  for (var i = 1; i < match.length; i++) {
+    var key = keys[i - 1];
+    var prop = key.name;
+    var val = decode_param(match[i])
 
     if (val !== undefined || !(hasOwnProperty.call(params, prop))) {
       params[prop] = val;
@@ -172,7 +172,7 @@ function decode_param(val) {
     return decodeURIComponent(val);
   } catch (err) {
     if (err instanceof URIError) {
-      err.message = `Failed to decode param '${  val  }'`;
+      err.message = 'Failed to decode param \'' + val + '\'';
       err.status = err.statusCode = 400;
     }
 

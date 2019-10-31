@@ -6,14 +6,14 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @private
  */
 
-const setPrototypeOf = require('setprototypeof')
+var setPrototypeOf = require('setprototypeof')
 
 /**
  * Initialization middleware, exposing the

@@ -5,23 +5,23 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  * @api private
  */
 
-const {Buffer} = require('safe-buffer')
-const contentDisposition = require('content-disposition');
-const contentType = require('content-type');
-const deprecate = require('depd')('express');
-const flatten = require('array-flatten');
-const {mime} = require('send');
-const etag = require('etag');
-const proxyaddr = require('proxy-addr');
-const qs = require('qs');
-const querystring = require('querystring');
+var Buffer = require('safe-buffer').Buffer
+var contentDisposition = require('content-disposition');
+var contentType = require('content-type');
+var deprecate = require('depd')('express');
+var flatten = require('array-flatten');
+var mime = require('send').mime;
+var etag = require('etag');
+var proxyaddr = require('proxy-addr');
+var qs = require('qs');
+var querystring = require('querystring');
 
 /**
  * Return strong ETag for `body`.
@@ -54,9 +54,9 @@ exports.wetag = createETagGenerator({ weak: true })
  */
 
 exports.isAbsolute = function(path){
-  if (path[0] === '/') return true;
-  if (path[1] === ':' && (path[2] === '\\' || path[2] === '/')) return true; // Windows device path
-  if (path.substring(0, 2) === '\\\\') return true; // Microsoft Azure absolute path
+  if ('/' === path[0]) return true;
+  if (':' === path[1] && ('\\' === path[2] || '/' === path[2])) return true; // Windows device path
+  if ('\\\\' === path.substring(0, 2)) return true; // Microsoft Azure absolute path
 };
 
 /**
@@ -93,9 +93,9 @@ exports.normalizeType = function(type){
  */
 
 exports.normalizeTypes = function(types){
-  const ret = [];
+  var ret = [];
 
-  for (let i = 0; i < types.length; ++i) {
+  for (var i = 0; i < types.length; ++i) {
     ret.push(exports.normalizeType(types[i]));
   }
 
@@ -125,12 +125,12 @@ exports.contentDisposition = deprecate.function(contentDisposition,
  */
 
 function acceptParams(str, index) {
-  const parts = str.split(/ *; */);
-  const ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
+  var parts = str.split(/ *; */);
+  var ret = { value: parts[0], quality: 1, params: {}, originalIndex: index };
 
-  for (let i = 1; i < parts.length; ++i) {
-    const pms = parts[i].split(/ *= */);
-    if (pms[0] === 'q') {
+  for (var i = 1; i < parts.length; ++i) {
+    var pms = parts[i].split(/ *= */);
+    if ('q' === pms[0]) {
       ret.quality = parseFloat(pms[1]);
     } else {
       ret.params[pms[0]] = pms[1];
@@ -149,7 +149,7 @@ function acceptParams(str, index) {
  */
 
 exports.compileETag = function(val) {
-  let fn;
+  var fn;
 
   if (typeof val === 'function') {
     return val;
@@ -168,7 +168,7 @@ exports.compileETag = function(val) {
       fn = exports.wetag;
       break;
     default:
-      throw new TypeError(`unknown value for etag function: ${  val}`);
+      throw new TypeError('unknown value for etag function: ' + val);
   }
 
   return fn;
@@ -183,7 +183,7 @@ exports.compileETag = function(val) {
  */
 
 exports.compileQueryParser = function compileQueryParser(val) {
-  let fn;
+  var fn;
 
   if (typeof val === 'function') {
     return val;
@@ -203,7 +203,7 @@ exports.compileQueryParser = function compileQueryParser(val) {
       fn = querystring.parse;
       break;
     default:
-      throw new TypeError(`unknown value for query parser function: ${  val}`);
+      throw new TypeError('unknown value for query parser function: ' + val);
   }
 
   return fn;
@@ -253,7 +253,7 @@ exports.setCharset = function setCharset(type, charset) {
   }
 
   // parse type
-  const parsed = contentType.parse(type);
+  var parsed = contentType.parse(type);
 
   // set charset
   parsed.parameters.charset = charset;
@@ -273,7 +273,7 @@ exports.setCharset = function setCharset(type, charset) {
 
 function createETagGenerator (options) {
   return function generateETag (body, encoding) {
-    const buf = !Buffer.isBuffer(body)
+    var buf = !Buffer.isBuffer(body)
       ? Buffer.from(body, encoding)
       : body
 

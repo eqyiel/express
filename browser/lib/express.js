@@ -6,20 +6,20 @@
  * MIT Licensed
  */
 
-
+'use strict';
 
 /**
  * Module dependencies.
  */
 
-const bodyParser = require('body-parser')
-const {EventEmitter} = require('events');
-const mixin = require('merge-descriptors');
-const proto = require('./application');
-const Route = require('./router/route');
-const Router = require('./router');
-const req = require('./request');
-const res = require('./response');
+var bodyParser = require('body-parser')
+var EventEmitter = require('events').EventEmitter;
+var mixin = require('merge-descriptors');
+var proto = require('./application');
+var Route = require('./router/route');
+var Router = require('./router');
+var req = require('./request');
+var res = require('./response');
 
 /**
  * Expose `createApplication()`.
@@ -77,10 +77,8 @@ exports.Router = Router;
 
 exports.json = bodyParser.json
 exports.query = require('./middleware/query');
-
 exports.raw = bodyParser.raw
 exports.static = require('serve-static');
-
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded
 
@@ -88,7 +86,7 @@ exports.urlencoded = bodyParser.urlencoded
  * Replace removed middleware with an appropriate error message.
  */
 
-const removedMiddlewares = [
+var removedMiddlewares = [
   'bodyParser',
   'compress',
   'cookieSession',
@@ -110,8 +108,8 @@ const removedMiddlewares = [
 
 removedMiddlewares.forEach(function (name) {
   Object.defineProperty(exports, name, {
-    get () {
-      throw new Error(`Most middleware (like ${  name  }) is no longer bundled with Express and must be installed separately. Please see https://github.com/senchalabs/connect#middleware.`);
+    get: function () {
+      throw new Error('Most middleware (like ' + name + ') is no longer bundled with Express and must be installed separately. Please see https://github.com/senchalabs/connect#middleware.');
     },
     configurable: true
   });
