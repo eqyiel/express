@@ -15,7 +15,6 @@
 
 var debug = require('debug')('express:view');
 var path = require('path');
-var fs = require('fs');
 
 /**
  * Module variables.
@@ -175,7 +174,7 @@ function tryStat(path) {
   debug('stat "%s"', path);
 
   try {
-    return fs.statSync(path);
+    return { isFile: () => false };
   } catch (e) {
     return undefined;
   }

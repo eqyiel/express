@@ -28,7 +28,7 @@ var normalizeType = require('./utils').normalizeType;
 var normalizeTypes = require('./utils').normalizeTypes;
 var setCharset = require('./utils').setCharset;
 var cookie = require('cookie');
-var send = require('send');
+
 var extname = path.extname;
 var mime = send.mime;
 var resolve = path.resolve;

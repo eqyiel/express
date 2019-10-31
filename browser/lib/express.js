@@ -12,7 +12,6 @@
  * Module dependencies.
  */
 
-var bodyParser = require('body-parser')
 var EventEmitter = require('events').EventEmitter;
 var mixin = require('merge-descriptors');
 var proto = require('./application');
@@ -78,7 +77,7 @@ exports.Router = Router;
 exports.json = bodyParser.json
 exports.query = require('./middleware/query');
 exports.raw = bodyParser.raw
-exports.static = require('serve-static');
+exports.static = () => {};
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded
 
