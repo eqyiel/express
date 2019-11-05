@@ -17,7 +17,6 @@ var contentDisposition = require('content-disposition');
 var deprecate = require('depd')('express');
 var encodeUrl = require('encodeurl');
 var escapeHtml = require('escape-html');
-var http = require('http');
 var isAbsolute = require('./utils').isAbsolute;
 var onFinished = require('on-finished');
 var path = require('path');
@@ -28,7 +27,7 @@ var normalizeType = require('./utils').normalizeType;
 var normalizeTypes = require('./utils').normalizeTypes;
 var setCharset = require('./utils').setCharset;
 var cookie = require('cookie');
-
+var send = {mime: {lookup: (string) => string}};
 var extname = path.extname;
 var mime = send.mime;
 var resolve = path.resolve;
@@ -39,7 +38,11 @@ var vary = require('vary');
  * @public
  */
 
-var res = Object.create(http.ServerResponse.prototype)
+var res = {
+  setHeader: () => {},
+  emit: () => {},
+  end: () => {}
+};
 
 /**
  * Module exports.

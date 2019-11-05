@@ -12,6 +12,12 @@
  * Module dependencies.
  */
 
+var bodyParser = {
+  json: () => () => {},
+  raw: () => () => {},
+  text: () => () => {},
+  urlencoded: () => () => {},
+};
 var EventEmitter = require('events').EventEmitter;
 var mixin = require('merge-descriptors');
 var proto = require('./application');
@@ -77,7 +83,7 @@ exports.Router = Router;
 exports.json = bodyParser.json
 exports.query = require('./middleware/query');
 exports.raw = bodyParser.raw
-exports.static = () => {};
+exports.static = () => () => {};
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded
 

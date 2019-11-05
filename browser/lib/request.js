@@ -17,7 +17,7 @@ var accepts = require('accepts');
 var deprecate = require('depd')('express');
 var isIP = require('is-ip');
 var typeis = require('type-is');
-var http = require('http');
+
 var fresh = require('fresh');
 var parseRange = require('range-parser');
 var parse = require('parseurl');
@@ -28,7 +28,15 @@ var proxyaddr = require('proxy-addr');
  * @public
  */
 
-var req = Object.create(http.IncomingMessage.prototype)
+var req = {
+  end: () => req,
+  push: () => {},
+  listeners: () => ({ length: 0 }),
+  on: () => {},
+  removeListener: () => {},
+  resume: () => () => {},
+  emit: () => {},
+};
 
 /**
  * Module exports.
