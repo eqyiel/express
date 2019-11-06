@@ -214,7 +214,8 @@ proto.handle = function handle(req, res, out) {
     var layer;
     var match;
     var route;
-
+    debug('idx', idx)
+    debug('stack.length', stack.length)
     while (match !== true && idx < stack.length) {
       layer = stack[idx++];
       match = matchLayer(layer, path);
@@ -234,14 +235,20 @@ proto.handle = function handle(req, res, out) {
         continue;
       }
 
+      debug('hi')
+
       if (layerError) {
+        debug('layerError', layerError)
         // routes do not match with a pending error
         match = false;
         continue;
       }
 
+
+
       var method = req.method;
       var has_method = route._handles_method(method);
+      debug('has_method', has_method);
 
       // build up automatic options response
       if (!has_method && method === 'OPTIONS') {
@@ -255,10 +262,14 @@ proto.handle = function handle(req, res, out) {
       }
     }
 
+    debug('match?', match);
+
     // no match
     if (match !== true) {
       return done(layerError);
     }
+
+    debug('route?', route);
 
     // store route for dispatch on change
     if (route) {
@@ -276,7 +287,7 @@ proto.handle = function handle(req, res, out) {
       if (err) {
         return next(layerError || err);
       }
-
+      debug('aaaaa', route);
       if (route) {
         return layer.handle_request(req, res, next);
       }

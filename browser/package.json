@@ -17,6 +17,7 @@
     "debug": "^4.1.1",
     "is-ip": "^3.1.0",
     "merge-descriptors": "^1.0.1",
+    "mime-types": "^2.1.24",
     "setprototypeof": "^1.2.0"
   }
 }

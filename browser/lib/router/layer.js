@@ -109,7 +109,7 @@ Layer.prototype.handle_request = function handle(req, res, next) {
 
 Layer.prototype.match = function match(path) {
   var match
-
+  debug('path', path);
   if (path != null) {
     // fast path non-ending match for / (any path matches)
     if (this.regexp.fast_slash) {
@@ -128,6 +128,8 @@ Layer.prototype.match = function match(path) {
     // match the path
     match = this.regexp.exec(path)
   }
+
+  debug('match?', match);
 
   if (!match) {
     this.params = undefined;

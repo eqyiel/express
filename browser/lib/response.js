@@ -27,7 +27,7 @@ var normalizeType = require('./utils').normalizeType;
 var normalizeTypes = require('./utils').normalizeTypes;
 var setCharset = require('./utils').setCharset;
 var cookie = require('cookie');
-var send = {mime: {lookup: (string) => string}};
+var send = { mime: { lookup: require('mime-types').contentType, charsets: require('mime-types').charsets } };
 var extname = path.extname;
 var mime = send.mime;
 var resolve = path.resolve;
@@ -41,7 +41,7 @@ var vary = require('vary');
 var res = {
   setHeader: () => {},
   emit: () => {},
-  end: () => {}
+  end: () => {},
 };
 
 /**
@@ -162,7 +162,6 @@ res.send = function send(body) {
       }
       break;
   }
-
   // write strings in utf-8
   if (typeof chunk === 'string') {
     encoding = 'utf8';
@@ -221,6 +220,9 @@ res.send = function send(body) {
     this.end();
   } else {
     // respond
+    console.log('get ready for it')
+    console.log(chunk.toString(), encoding);
+
     this.end(chunk, encoding);
   }
 

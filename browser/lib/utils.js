@@ -252,6 +252,7 @@ exports.setCharset = function setCharset(type, charset) {
     return type;
   }
 
+  console.log('type', type, charset)
   // parse type
   var parsed = contentType.parse(type);
 

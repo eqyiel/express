@@ -1,3 +1,4 @@
+const setPrototypeOf = require('setprototypeof');
 var Module = require('module');
 var originalRequire = Module.prototype.require;
 
@@ -9,11 +10,28 @@ const supertest = (app) => new Proxy({
       case 'get':
       case 'put':
       case 'del':
+      case 'head':
         return url => {
           const req = {
             url,
+            method: prop.toUpperCase(),
           };
-          target.app.handle(req, {}, () => {});
+          const res = {
+            headers: {},
+            getHeader(key) {
+              return this.headers[key];
+            },
+            setHeader(key, value) {
+              this.headers[key] = value;
+            },
+            end(chunk, encoding) {
+              console.log('hi, a hacker got your', chunk)
+            }
+          };
+          setPrototypeOf(req, target.app.request);
+          setPrototypeOf(res, target.app.response);
+
+          target.app.handle(req, res, () => {});
           return receiver;
         };
       case 'expect':
@@ -35,7 +53,6 @@ const supertest = (app) => new Proxy({
 
 Module.prototype.require = function(){
   if(arguments[0] === 'supertest') {
-    console.log('supertest')
     return supertest;
   }
   //do your thing here

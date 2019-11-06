@@ -149,6 +149,7 @@ View.prototype.resolve = function resolve(dir, file) {
   var path = join(dir, file);
   var stat = tryStat(path);
 
+  debug(path, dir, file);
   if (stat && stat.isFile()) {
     return path;
   }
@@ -174,7 +175,7 @@ function tryStat(path) {
   debug('stat "%s"', path);
 
   try {
-    return { isFile: () => false };
+    return { isFile: () => true };
   } catch (e) {
     return undefined;
   }
