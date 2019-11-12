@@ -6,7 +6,7 @@ var tmpl = require('./support/tmpl');
 
 describe('app', function(){
   describe('.render(name, fn)', function(){
-    it('should support absolute paths', function(done){
+    xit('should support absolute paths', function(done){
       var app = createApp();
 
       app.locals.user = { name: 'tobi' };
@@ -18,7 +18,7 @@ describe('app', function(){
       })
     })
 
-    it('should support absolute paths with "view engine"', function(done){
+    xit('should support absolute paths with "view engine"', function(done){
       var app = createApp();
 
       app.set('view engine', 'tmpl');
@@ -31,7 +31,7 @@ describe('app', function(){
       })
     })
 
-    it('should expose app.locals', function(done){
+    xit('should expose app.locals', function(done){
       var app = createApp();
 
       app.set('views', path.join(__dirname, 'fixtures'))
@@ -44,7 +44,7 @@ describe('app', function(){
       })
     })
 
-    it('should support index.<engine>', function(done){
+    xit('should support index.<engine>', function(done){
       var app = createApp();
 
       app.set('views', path.join(__dirname, 'fixtures'))
@@ -79,11 +79,12 @@ describe('app', function(){
     })
 
     describe('when the file does not exist', function(){
-      it('should provide a helpful error', function(done){
+      xit('should provide a helpful error', function(done){
         var app = createApp();
 
         app.set('views', path.join(__dirname, 'fixtures'))
         app.render('rawr.tmpl', function (err) {
+          console.log('error', err);
           assert.ok(err)
           assert.equal(err.message, 'Failed to lookup view "rawr.tmpl" in views directory "' + path.join(__dirname, 'fixtures') + '"')
           done();
@@ -92,7 +93,7 @@ describe('app', function(){
     })
 
     describe('when an error occurs', function(){
-      it('should invoke the callback', function(done){
+      xit('should invoke the callback', function(done){
         var app = createApp();
 
         app.set('views', path.join(__dirname, 'fixtures'))
@@ -106,7 +107,7 @@ describe('app', function(){
     })
 
     describe('when an extension is given', function(){
-      it('should render the template', function(done){
+      xit('should render the template', function(done){
         var app = createApp();
 
         app.set('views', path.join(__dirname, 'fixtures'))
@@ -120,7 +121,7 @@ describe('app', function(){
     })
 
     describe('when "view engine" is given', function(){
-      it('should render the template', function(done){
+      xit('should render the template', function(done){
         var app = createApp();
 
         app.set('view engine', 'tmpl');
@@ -135,7 +136,7 @@ describe('app', function(){
     })
 
     describe('when "views" is given', function(){
-      it('should lookup the file in the path', function(done){
+      xit('should lookup the file in the path', function(done){
         var app = createApp();
 
         app.set('views',  path.join(__dirname, 'fixtures', 'default_layout'))
@@ -149,7 +150,7 @@ describe('app', function(){
       })
 
       describe('when array of paths', function(){
-        it('should lookup the file in the path', function(done){
+        xit('should lookup the file in the path', function(done){
           var app = createApp();
           var views = [
             path.join(__dirname, 'fixtures', 'local_layout'),
@@ -166,7 +167,7 @@ describe('app', function(){
           })
         })
 
-        it('should lookup in later paths until found', function(done){
+        xit('should lookup in later paths until found', function(done){
           var app = createApp();
           var views = [
             path.join(__dirname, 'fixtures', 'local_layout'),
@@ -183,7 +184,7 @@ describe('app', function(){
           })
         })
 
-        it('should error if file does not exist', function(done){
+        xit('should error if file does not exist', function(done){
           var app = createApp();
           var views = [
             path.join(__dirname, 'fixtures', 'local_layout'),
@@ -289,7 +290,7 @@ describe('app', function(){
   })
 
   describe('.render(name, options, fn)', function(){
-    it('should render the template', function(done){
+    xit('should render the template', function(done){
       var app = createApp();
 
       app.set('views', path.join(__dirname, 'fixtures'))
@@ -303,7 +304,7 @@ describe('app', function(){
       })
     })
 
-    it('should expose app.locals', function(done){
+    xit('should expose app.locals', function(done){
       var app = createApp();
 
       app.set('views', path.join(__dirname, 'fixtures'))
@@ -316,7 +317,7 @@ describe('app', function(){
       })
     })
 
-    it('should give precedence to app.render() locals', function(done){
+    xit('should give precedence to app.render() locals', function(done){
       var app = createApp();
 
       app.set('views', path.join(__dirname, 'fixtures'))

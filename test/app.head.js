@@ -19,7 +19,6 @@ describe('HEAD', function(){
 
   it('should output the same headers as GET requests', function(done){
     var app = express();
-    console.log('zzzzz');
 
     app.get('/tobi', function(req, res){
       // send() detects HEAD
@@ -29,7 +28,6 @@ describe('HEAD', function(){
     request(app)
     .get('/tobi')
     .expect(200, function(err, res){
-      console.log(res);
       if (err) return done(err);
       var headers = res.headers;
       request(app)

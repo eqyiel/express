@@ -131,7 +131,8 @@ View.prototype.lookup = function lookup(name) {
 
 View.prototype.render = function render(options, callback) {
   debug('render "%s"', this.path);
-  this.engine(this.path, options, callback);
+  callback(null, '');
+  // this.engine(this.path, options, callback);
 };
 
 /**

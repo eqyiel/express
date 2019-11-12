@@ -22,12 +22,22 @@ var onFinished = require('on-finished');
 var path = require('path');
 var statuses = require('statuses')
 var merge = require('utils-merge');
-var sign = require('cookie-signature').sign;
+var sign = (a, b) => a;
 var normalizeType = require('./utils').normalizeType;
 var normalizeTypes = require('./utils').normalizeTypes;
 var setCharset = require('./utils').setCharset;
 var cookie = require('cookie');
-var send = { mime: { lookup: require('mime-types').contentType, charsets: require('mime-types').charsets } };
+function send(req, pathname, opts) {
+  return {
+    on: (eventName, callback) => {
+      if (eventName === 'end') {
+        callback();
+      }
+    },
+    pipe: () => {},
+  }
+}
+send.mime = { lookup: require('mime-types').contentType, charsets: require('mime-types').charsets }
 var extname = path.extname;
 var mime = send.mime;
 var resolve = path.resolve;
@@ -39,9 +49,9 @@ var vary = require('vary');
  */
 
 var res = {
-  setHeader: () => {},
   emit: () => {},
   end: () => {},
+  abort: () => {},
 };
 
 /**
@@ -772,7 +782,6 @@ res.header = function header(field, val) {
         if (charset) value += '; charset=' + charset.toLowerCase();
       }
     }
-
     this.setHeader(field, value);
   } else {
     for (var key in field) {
@@ -1063,12 +1072,14 @@ function sendfile(res, file, options, callback) {
 
   // finished
   function onfinish(err) {
+    console.log(err)
     if (err && err.code === 'ECONNRESET') return onaborted();
     if (err) return onerror(err);
     if (done) return;
 
     setImmediate(function () {
       if (streaming !== false && !done) {
+        console.log(1076)
         onaborted();
         return;
       }
@@ -1105,6 +1116,7 @@ function sendfile(res, file, options, callback) {
   }
 
   // pipe
+  console.log(file);
   file.pipe(res);
 }
 

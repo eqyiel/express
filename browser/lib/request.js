@@ -36,6 +36,7 @@ var req = {
   removeListener: () => {},
   resume: () => () => {},
   emit: () => {},
+  abort: () => {},
 };
 
 /**

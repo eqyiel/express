@@ -61,6 +61,7 @@ describe('res', function(){
       .expect('ETag', /^(?:W\/)?"[^"]+"$/)
       .expect(200, 'tobi', function (err, res) {
         if (err) return done(err);
+        console.log(res);
         var etag = res.headers.etag;
         request(app)
         .get('/')
@@ -117,6 +118,7 @@ describe('res', function(){
             cb(error)
           }, 10)
         })
+        // console.log('test' + test);
         test.abort();
       });
 
@@ -127,6 +129,7 @@ describe('res', function(){
 
       var server = app.listen()
       var test = request(server).get('/')
+      console.log(test);
       test.end()
     })
 

@@ -121,7 +121,7 @@ describe('res', function(){
       it('should generate a signed JSON cookie', function(done){
         var app = express();
 
-        app.use(cookieParser('foo bar baz'));
+        // app.use(cookieParser('foo bar baz'));
 
         app.use(function(req, res){
           res.cookie('user', { name: 'tobi' }, { signed: true }).end();

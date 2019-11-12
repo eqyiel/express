@@ -42,6 +42,7 @@ describe('res', function(){
     it('should invoke the callback', function(done){
       var app = express();
       var cb = after(2, done);
+      console.log(cb);
 
       app.use(function(req, res){
         res.download('test/fixtures/user.html', cb);

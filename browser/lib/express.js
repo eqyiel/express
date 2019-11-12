@@ -13,10 +13,10 @@
  */
 
 var bodyParser = {
-  json: () => () => {},
-  raw: () => () => {},
-  text: () => () => {},
-  urlencoded: () => () => {},
+  json: (arg) => () => {},
+  raw: (arg) => () => {},
+  text: (arg) => () => {},
+  urlencoded: (arg) => () => {},
 };
 var EventEmitter = require('events').EventEmitter;
 var mixin = require('merge-descriptors');
@@ -83,7 +83,7 @@ exports.Router = Router;
 exports.json = bodyParser.json
 exports.query = require('./middleware/query');
 exports.raw = bodyParser.raw
-exports.static = () => () => {};
+exports.static = (a, b) => () => {};
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded
 

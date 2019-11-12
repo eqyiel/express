@@ -650,7 +650,8 @@ app.listen = function listen(...args) {
     setTimeout(callback, 1000);
   }
 
-  return { close: () => {} }
+  setPrototypeOf(this, {close: () => {}, end: () => {}});
+  return this;
 };
 
 /**
