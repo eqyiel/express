@@ -76,7 +76,8 @@ const supertest = (app) => new Proxy({
           setPrototypeOf(res, target.app.response);
           this.res = res;
           this.err = err;
-          target.app.handle(req, res, () => {});
+
+          setImmediate(() => target.app.handle(req, res, () => {}))
           return receiver;
         };
       case '_server':
@@ -87,10 +88,10 @@ const supertest = (app) => new Proxy({
             target._asserts.push(a);
           }
           if(typeof b === 'function') {
-              b(this.err, this.res);
+            setImmediate(() => b(this.err, this.res));
           }
           if (typeof c === 'function') {
-            c(this.err, this.res);
+            setImmediate(() => c(this.err, this.res));
           }
 
           if (typeof a === 'number') {
@@ -112,11 +113,10 @@ const supertest = (app) => new Proxy({
           if (!callback) {
             return;
           }
-          console.log('callback!!!' + callback);
-          callback(this.err, this.res);
+          setImmediate(() => callback(this.err, this.res));
         };
       case 'abort':
-        return () => {};
+        return () => receiver;
       default:
         throw new Error(prop);
     }

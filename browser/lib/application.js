@@ -647,10 +647,17 @@ app.listen = function listen(...args) {
   const [, callback] = normalizeArgs(args);
 
   if (callback !== null) {
-    setTimeout(callback, 1000);
+    setImmediate(callback);
   }
 
-  setPrototypeOf(this, {close: () => {}, end: () => {}});
+  setPrototypeOf(this, {
+    abort: () => {},
+    close: (callback) => {
+      if (callback) {
+        setImmediate(callback);
+      }
+    }
+  });
   return this;
 };
 
