@@ -14,16 +14,42 @@
 
 var bodyParser = {
   json: (arg) => {
-    if (arg) {
+    if (arg && arg.verify) {
       if (typeof arg.verify !== 'function') {
         throw new TypeError('option verify must be function')
       }
     }
     return () => {};
     },
-  raw: (arg) => () => {},
-  text: (arg) => () => {},
-  urlencoded: (arg) => () => {},
+  raw: (arg) => {
+    if (arg && arg.verify) {
+      if (typeof arg.verify !== 'function') {
+        throw new TypeError('option verify must be function')
+      }
+    }
+    return () => {};
+  },
+  text: (arg) => {
+    if (arg && arg.verify) {
+      if (typeof arg.verify !== 'function') {
+        throw new TypeError('option verify must be function')
+      }
+    }
+    return () => {};
+  },
+  urlencoded: (arg) => {
+    if (arg) {
+      if (arg.parameterLimit !== undefined) {
+        if ((typeof arg.parameterLimit === 'number' && arg.parameterLimit < 1) || (typeof arg.parameterLimit === 'string')) {
+          throw new TypeError('TypeError: option parameterLimit must be a positive number')
+        }
+      }
+      if (arg.verify && typeof arg.verify !== 'function') {
+        throw new TypeError('option verify must be function')
+      }
+    }
+    return () => {};
+  },
 };
 var EventEmitter = require('events').EventEmitter;
 var mixin = require('merge-descriptors');
@@ -91,7 +117,19 @@ exports.Router = Router;
 exports.json = bodyParser.json
 exports.query = require('./middleware/query');
 exports.raw = bodyParser.raw
-exports.static = (a, b) => () => {};
+exports.static = (a, b) => {
+  if (!a && !b) {
+    throw new Error('root path required')
+  } else if (!b && typeof a === 'number') {
+    throw new Error('root path string')
+  }
+  if (b && b.setHeaders) {
+    if (typeof b.setHeaders !== 'function') {
+      throw new Error('setHeaders function')
+    }
+  }
+  return () => {};
+};
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded
 

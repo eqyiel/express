@@ -253,7 +253,6 @@ res.send = function send(body) {
 
 res.json = function json(obj) {
   var val = obj;
-  console.log('' + obj)
 
   // allow status / body
   if (arguments.length === 2) {
