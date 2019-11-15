@@ -20,6 +20,7 @@ describe('app.all()', function(){
   })
 
   it('should run the callback for a method just once', function(done){
+    debugger;
     var app = express()
       , n = 0;
 

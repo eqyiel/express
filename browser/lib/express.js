@@ -12,45 +12,8 @@
  * Module dependencies.
  */
 
-var bodyParser = {
-  json: (arg) => {
-    if (arg && arg.verify) {
-      if (typeof arg.verify !== 'function') {
-        throw new TypeError('option verify must be function')
-      }
-    }
-    return () => {};
-    },
-  raw: (arg) => {
-    if (arg && arg.verify) {
-      if (typeof arg.verify !== 'function') {
-        throw new TypeError('option verify must be function')
-      }
-    }
-    return () => {};
-  },
-  text: (arg) => {
-    if (arg && arg.verify) {
-      if (typeof arg.verify !== 'function') {
-        throw new TypeError('option verify must be function')
-      }
-    }
-    return () => {};
-  },
-  urlencoded: (arg) => {
-    if (arg) {
-      if (arg.parameterLimit !== undefined) {
-        if ((typeof arg.parameterLimit === 'number' && arg.parameterLimit < 1) || (typeof arg.parameterLimit === 'string')) {
-          throw new TypeError('TypeError: option parameterLimit must be a positive number')
-        }
-      }
-      if (arg.verify && typeof arg.verify !== 'function') {
-        throw new TypeError('option verify must be function')
-      }
-    }
-    return () => {};
-  },
-};
+const bodyParser = require('body-parser');
+
 var EventEmitter = require('events').EventEmitter;
 var mixin = require('merge-descriptors');
 var proto = require('./application');
@@ -128,7 +91,9 @@ exports.static = (a, b) => {
       throw new Error('setHeaders function')
     }
   }
-  return () => {};
+  return (req, res, next) => {
+    next();
+  };
 };
 exports.text = bodyParser.text
 exports.urlencoded = bodyParser.urlencoded

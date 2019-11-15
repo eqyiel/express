@@ -636,7 +636,6 @@ function restore(fn, obj) {
     props[i] = arguments[i + 2];
     vals[i] = obj[props[i]];
   }
-
   return function () {
     // restore vals
     for (var i = 0; i < props.length; i++) {

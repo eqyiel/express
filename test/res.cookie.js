@@ -39,6 +39,7 @@ describe('res', function(){
       var app = express();
 
       app.use(function(req, res){
+        debugger;
         res.cookie('name', 'tobi');
         res.cookie('age', 1);
         res.cookie('gender', '?');
@@ -48,6 +49,7 @@ describe('res', function(){
       request(app)
       .get('/')
       .end(function(err, res){
+        debugger;
         var val = ['name=tobi; Path=/', 'age=1; Path=/', 'gender=%3F; Path=/'];
         res.headers['set-cookie'].should.eql(val);
         done();

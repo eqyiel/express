@@ -2,138 +2,178 @@ const setPrototypeOf = require('setprototypeof');
 var Module = require('module');
 var originalRequire = Module.prototype.require;
 
-const supertest = (app) => new Proxy({
-  app, _asserts: [],
-  _assertHeader: () => {},
-  _assertStatus: () => {},
-  _assertBody: () => {},
-}, {
-  get: function(target, prop, receiver) {
-    switch (prop) {
-      case 'get':
-      case 'put':
-      case 'del':
-      case 'head':
-      case 'options':
-      case 'post':
-      case 'acl':
-      case 'bind':
-      case 'checkout':
-      case 'copy':
-      case 'delete':
-      case 'link':
-      case 'lock':
-      case 'm-search':
-      case 'merge':
-      case 'mkactivity':
-      case 'mkcalendar':
-      case 'mkcol':
-      case 'move':
-      case 'notify':
-      case 'patch':
-      case 'propfind':
-      case 'proppatch':
-      case 'purge':
-      case 'rebind':
-      case 'report':
-      case 'search':
-      case 'source':
-      case 'subscribe':
-      case 'trace':
-      case 'unbind':
-      case 'unlink':
-      case 'unlock':
-      case 'unsubscribe':
-      case 'send':
-      case 'set':
-      case 'unset':
-      case 'write':
-      case 'type':
-        console.log(prop)
-        return url => {
-          const req = {
-            url,
-            method: prop.toUpperCase(),
-            secret: true,
-          };
-          const res = {
-            headers: {},
-            getHeader(key) {
-              return this.headers[key];
-            },
-            setHeader(key, value) {
-              if (!this.headers[key.toLowerCase()]) {
-                this.headers[key.toLowerCase()] = [value]
-              } else{
-                this.headers[key.toLowerCase()].push(value);
-              }
-              console.log(this.headers)
-            },
-            end(chunk, encoding) {
-              console.log('hi, a hacker got your', chunk)
-            }
-          };
-          const err = undefined;
-          setPrototypeOf(req, target.app.request);
-          setPrototypeOf(res, target.app.response);
-          this.res = res;
-          this.err = err;
+const supertest = (app) => {
 
-          setImmediate(() => target.app.handle(req, res, () => {}))
-          return receiver;
-        };
-      case '_server':
-        return { address: () => ({ address: '' })};
-      case 'set':
-        return (a, b) => {
-          target.app.response.setHeader(a, b);
-          return receiver;
-        };
-      case 'expect':
-        return (a, b, c) => {
-          if(typeof a === 'function') {
-            target._asserts.push(a);
-          }
-          if(typeof b === 'function') {
-            setImmediate(() => b(this.err, this.res));
-          }
-          if (typeof c === 'function') {
-            setImmediate(() => c(this.err, this.res));
-          }
+  const _asserts = [];
+  const _assertHeader = () => {};
+  const _assertStatus = () => {};
+  const _assertBody = () => {};
+  const _assertFunction = () => {};
 
-          if (typeof a === 'number') {
-            // setImmediate(() => target._asserts.push(target._assertStatus.bind(target, a)));
-            // body
-            if (typeof b !== 'function' && arguments.length > 1) {
-              console.log(108)
-              setImmediate(() => target._asserts.push(target._assertBody.bind(target, b)));
-            } else {
-              console.log('callback')
-              setImmediate(() => b(this.err, this.res));
-            }
+  let endCallback;
+  let ended = false;
+
+  const req = {
+    headers: {},
+    secret: true,
+    socket: { destroy: () => {} },
+  };
+
+  const res = {
+    headers: {},
+    headersSent: false,
+    getHeader(key) {
+      return this.headers[key];
+    },
+    setHeader(key, value) {
+      if (!this.headers[key.toLowerCase()]) {
+        this.headers[key.toLowerCase()] = [value]
+      } else{
+        this.headers[key.toLowerCase()].push(value);
+      }
+      console.log(this.headers)
+    },
+    end(chunk, encoding) {
+      this.headersSent = true;
+      console.log('hi, a hacker got your', chunk)
+      assert(null, res, endCallback);
+    },
+  };
+
+  const err = undefined;
+
+  setPrototypeOf(req, app.request);
+  setPrototypeOf(res, app.response);
+
+  const assert = (err, res, fn) => {
+    let error;
+    let i;
+
+    for (i = 0; i < _asserts.length && !error; i += 1) {
+      error = _assertFunction(_asserts[i], res);
+    }
+
+    fn.call(proxy, error || null, res);
+  }
+
+  const proxy = new Proxy({
+    app,
+  }, {
+    get: function(target, prop, receiver) {
+      switch (prop) {
+        case 'acl':
+        case 'bind':
+        case 'checkout':
+        case 'connect':
+        case 'copy':
+        case 'del':
+        case 'delete': //        same as 'del'?
+        case 'get':
+        case 'head':
+        case 'link':
+        case 'lock':
+        case 'm-search':
+        case 'merge':
+        case 'mkactivity':
+        case 'mkcalendar':
+        case 'mkcol':
+        case 'move':
+        case 'notify':
+        case 'options':
+        case 'patch':
+        case 'post':
+        case 'propfind':
+        case 'proppatch':
+        case 'purge':
+        case 'put':
+        case 'rebind':
+        case 'report':
+        case 'search':
+        case 'source':
+        case 'subscribe':
+        case 'trace':
+        case 'unbind':
+        case 'unlink':
+        case 'unlock':
+        case 'unsubscribe':
+          return url => {
+            req.method = prop.toUpperCase();
+            req.url = url;
+            return receiver;
+          };
+        case '_server':
+          return { address: () => ({ address: '' })};
+        case 'send':
+          return (body) => {
+            req.body = body;
             return receiver;
           }
+        case 'unset':{
+          return (key) => {
+            delete req.headers[key.toLowerCase()];
+            return receiver;
+          }
+        }
+        case 'write': {
+          return (data, encoding) => {
+            // I don't think we can support partial writes
+            return receiver;
+          }
+        }
+        case 'type': {
+          return (value) => receiver.set('Content-Type', value)
+        }
+        case 'set':
+          return (a, b) => {
+            res.setHeader(a, b);
+            return receiver;
+          };
+        case 'expect':
+          return (a, b, c) => {
+            if(typeof a === 'function') {
+              _asserts.push(a);
+              return receiver;
+            }
+            if(typeof b === 'function') {
+              receiver.end(b);
+            }
+            if (typeof c === 'function') {
+              receiver.end(c);
+            }
 
-          if (typeof b === 'string') {
-            setImmediate(() => target._asserts.push(target._assertHeader.bind(target, { name: '' + a, value: b })));
-          }
-          return receiver;
-        };
-      case 'end':
-        return callback => {
-          if (!callback) {
-            return;
-          }
-          setImmediate(() => callback(this.err, this.res));
-        };
-      case 'abort':
-        return () => receiver;
-      default:
-        throw new Error(prop);
+            if (typeof a === 'number') {
+              _asserts.push(_assertStatus.bind(receiver, a));
+              if (typeof b !== 'function' && arguments.length > 1) {
+                _asserts.push(_assertBody.bind(receiver, b));
+              }
+              return receiver;
+            }
+
+            if (typeof b === 'string' || typeof b === 'number' || b instanceof RegExp) {
+              _asserts.push(_assertHeader.bind(target, { name: '' + a, value: b }));
+              return receiver;
+            }
+
+            _asserts.push(_assertBody.bind(receiver, a))
+
+            return receiver;
+          };
+        case 'end':
+          return callback => {
+            endCallback = callback;
+            setImmediate(() => app.handle(req, res));
+          };
+        case 'abort':
+          return () => receiver;
+        default:
+          throw new Error(prop);
+      }
+      return () => receiver;
     }
-    return () => receiver;
-  }
-});
+  });
+
+  return proxy;
+};
 
 Module.prototype.require = function(){
   if(arguments[0] === 'supertest') {
