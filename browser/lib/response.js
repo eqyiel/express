@@ -253,6 +253,7 @@ res.send = function send(body) {
 
 res.json = function json(obj) {
   var val = obj;
+  console.log('' + obj)
 
   // allow status / body
   if (arguments.length === 2) {
@@ -1028,6 +1029,7 @@ res.render = function render(view, options, callback) {
 
 // pipe the send file stream
 function sendfile(res, file, options, callback) {
+  console.log('sendfile is called')
   var done = false;
   var streaming;
 
@@ -1072,7 +1074,6 @@ function sendfile(res, file, options, callback) {
 
   // finished
   function onfinish(err) {
-    console.log(err)
     if (err && err.code === 'ECONNRESET') return onaborted();
     if (err) return onerror(err);
     if (done) return;

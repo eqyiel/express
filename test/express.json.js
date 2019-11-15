@@ -390,7 +390,8 @@ describe('express.json()', function () {
   })
 
   describe('with verify option', function () {
-    xit('should assert value if function', function () {
+    it('should assert value if function', function () {
+      console.log(createApp.bind(null, { verify: 'lol' }))
       assert.throws(createApp.bind(null, { verify: 'lol' }),
         /TypeError: option verify must be function/)
     })

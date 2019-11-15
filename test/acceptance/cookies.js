@@ -24,6 +24,7 @@ describe('cookies', function(){
       .type('urlencoded')
       .send({ remember: 1 })
       .expect(302, function(err, res){
+        console.log(res.headers)
         if (err) return done(err)
         request(app)
         .get('/')

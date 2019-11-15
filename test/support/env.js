@@ -49,6 +49,7 @@ const supertest = (app) => new Proxy({
       case 'unset':
       case 'write':
       case 'type':
+        console.log(prop)
         return url => {
           const req = {
             url,
@@ -66,6 +67,7 @@ const supertest = (app) => new Proxy({
               } else{
                 this.headers[key.toLowerCase()].push(value);
               }
+              console.log(this.headers)
             },
             end(chunk, encoding) {
               console.log('hi, a hacker got your', chunk)
@@ -82,6 +84,11 @@ const supertest = (app) => new Proxy({
         };
       case '_server':
         return { address: () => ({ address: '' })};
+      case 'set':
+        return (a, b) => {
+          target.app.response.setHeader(a, b);
+          return receiver;
+        };
       case 'expect':
         return (a, b, c) => {
           if(typeof a === 'function') {
@@ -95,16 +102,20 @@ const supertest = (app) => new Proxy({
           }
 
           if (typeof a === 'number') {
-            target._asserts.push(target._assertStatus.bind(target, a));
+            // setImmediate(() => target._asserts.push(target._assertStatus.bind(target, a)));
             // body
             if (typeof b !== 'function' && arguments.length > 1) {
-              target._asserts.push(target._assertBody.bind(target, b));
+              console.log(108)
+              setImmediate(() => target._asserts.push(target._assertBody.bind(target, b)));
+            } else {
+              console.log('callback')
+              setImmediate(() => b(this.err, this.res));
             }
             return receiver;
           }
 
           if (typeof b === 'string') {
-            target._asserts.push(target._assertHeader.bind(target, { name: '' + a, value: b }))
+            setImmediate(() => target._asserts.push(target._assertHeader.bind(target, { name: '' + a, value: b })));
           }
           return receiver;
         };

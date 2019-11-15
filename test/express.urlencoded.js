@@ -294,12 +294,12 @@ describe('express.urlencoded()', function () {
 
   describe('with parameterLimit option', function () {
     describe('with extended: false', function () {
-      xit('should reject 0', function () {
+      it('should reject 0', function () {
         assert.throws(createApp.bind(null, { extended: false, parameterLimit: 0 }),
           /TypeError: option parameterLimit must be a positive number/)
       })
 
-      xit('should reject string', function () {
+      it('should reject string', function () {
         assert.throws(createApp.bind(null, { extended: false, parameterLimit: 'beep' }),
           /TypeError: option parameterLimit must be a positive number/)
       })
@@ -358,12 +358,12 @@ describe('express.urlencoded()', function () {
     })
 
     describe('with extended: true', function () {
-      xit('should reject 0', function () {
+      it('should reject 0', function () {
         assert.throws(createApp.bind(null, { extended: true, parameterLimit: 0 }),
           /TypeError: option parameterLimit must be a positive number/)
       })
 
-      xit('should reject string', function () {
+      it('should reject string', function () {
         assert.throws(createApp.bind(null, { extended: true, parameterLimit: 'beep' }),
           /TypeError: option parameterLimit must be a positive number/)
       })
@@ -519,7 +519,7 @@ describe('express.urlencoded()', function () {
   })
 
   describe('with verify option', function () {
-    xit('should assert value if function', function () {
+    it('should assert value if function', function () {
       assert.throws(createApp.bind(null, { verify: 'lol' }),
         /TypeError: option verify must be function/)
     })

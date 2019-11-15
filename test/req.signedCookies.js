@@ -24,6 +24,7 @@ describe('req', function(){
       .end(function(err, res){
         if (err) return done(err);
         var cookie = res.header['set-cookie'];
+        console.log('cookie', cookie)
 
         request(app)
         .get('/')

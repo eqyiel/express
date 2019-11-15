@@ -17,11 +17,11 @@ describe('express.static()', function () {
       this.app = createApp()
     })
 
-    xit('should require root path', function () {
+    it('should require root path', function () {
       assert.throws(express.static.bind(), /root path required/)
     })
 
-    xit('should require root path to be string', function () {
+    it('should require root path to be string', function () {
       assert.throws(express.static.bind(null, 42), /root path.*string/)
     })
 
@@ -544,7 +544,7 @@ describe('express.static()', function () {
       } }))
     })
 
-    xit('should reject non-functions', function () {
+    it('should reject non-functions', function () {
       assert.throws(express.static.bind(null, fixtures, { 'setHeaders': 3 }), /setHeaders.*function/)
     })
 

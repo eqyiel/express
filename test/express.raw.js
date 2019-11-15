@@ -256,7 +256,7 @@ describe('express.raw()', function () {
   })
 
   describe('with verify option', function () {
-    xit('should assert value is function', function () {
+    it('should assert value is function', function () {
       assert.throws(createApp.bind(null, { verify: 'lol' }),
         /TypeError: option verify must be function/)
     })

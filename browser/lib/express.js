@@ -13,7 +13,14 @@
  */
 
 var bodyParser = {
-  json: (arg) => () => {},
+  json: (arg) => {
+    if (arg) {
+      if (typeof arg.verify !== 'function') {
+        throw new TypeError('option verify must be function')
+      }
+    }
+    return () => {};
+    },
   raw: (arg) => () => {},
   text: (arg) => () => {},
   urlencoded: (arg) => () => {},
@@ -68,6 +75,7 @@ function createApplication() {
 exports.application = proto;
 exports.request = req;
 exports.response = res;
+exports.bind = (a, b) => b;
 
 /**
  * Expose constructors.
