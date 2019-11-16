@@ -23,6 +23,10 @@ const supertest = (app) => {
 
   const res = {
     body: undefined,
+    text: undefined,
+    status: undefined,
+    statusCode: undefined,
+    statusMessage: undefined,
     headers: {},
     headersSent: false,
     getHeader(key) {
@@ -45,6 +49,10 @@ const supertest = (app) => {
 
       if (typeof this.body === 'string') {
         this.text = this.body;
+      }
+
+      if (typeof this.statusCode === number && typeof this.statusMessage === 'string') {
+        this.status = `${this.statusCode} ${this.statusMessage}`;
       }
 
       assert(null, this, endCallback);
