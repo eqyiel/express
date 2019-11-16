@@ -1,14 +1,16 @@
 const setPrototypeOf = require('setprototypeof');
+const superTest = require('supertest/lib/test.js');
+
 var Module = require('module');
 var originalRequire = Module.prototype.require;
 
 const supertest = (app) => {
 
   const _asserts = [];
-  const _assertHeader = () => {};
-  const _assertStatus = () => {};
-  const _assertBody = () => {};
-  const _assertFunction = () => {};
+  const _assertHeader = superTest.prototype._assertHeader;
+  const _assertStatus = superTest.prototype._assertStatus;
+  const _assertBody = superTest.prototype._assertBody;
+  const _assertFunction = superTest.prototype._assertFunction;
 
   let endCallback;
   let ended = false;
@@ -20,6 +22,7 @@ const supertest = (app) => {
   };
 
   const res = {
+    body: undefined,
     headers: {},
     headersSent: false,
     getHeader(key) {
@@ -33,10 +36,18 @@ const supertest = (app) => {
       }
       console.log(this.headers)
     },
-    end(chunk, encoding) {
+    end(chunk, _encoding) {
       this.headersSent = true;
+
       console.log('hi, a hacker got your', chunk)
-      assert(null, res, endCallback);
+
+      this.body = chunk;
+
+      if (typeof this.body === 'string') {
+        this.text = this.body;
+      }
+
+      assert(null, this, endCallback);
     },
   };
 
